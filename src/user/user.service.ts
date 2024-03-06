@@ -18,7 +18,7 @@ export class UserService {
       },
     });
     if (userEmailExists) {
-      throw new HttpException('Email already in use', HttpStatus.CONFLICT);
+      throw new HttpException("Email already in use", HttpStatus.BAD_REQUEST);
     }
     const encryptedPassword = await bcrypt.hash(createUserDto.password, 10);
     const user = await this.prismaService.user.create({
@@ -54,26 +54,47 @@ export class UserService {
       where: { id },
     });
     if (!userExists) {
-      throw new HttpException(`User not found`, HttpStatus.NOT_FOUND);
+      throw new HttpException("User not found", HttpStatus.NOT_FOUND);
     }
-    const emailExists = await this.prismaService.user.findMany({
-      where: { 
-        email: updateUserDto.email,
-        NOT: {id}
-      },
-    });
-    if (emailExists[0]) {
-      throw new HttpException("E-mail already registered", HttpStatus.BAD_REQUEST);
-    }    
-    const encryptedPassword = await bcrypt.hash(updateUserDto.password, 10);
-    await this.prismaService.user.update({
-      data: {
-        ...updateUserDto,
-        password: encryptedPassword,
-      },
-      where: { id },
-    });
-  }
+
+    if (updateUserDto.email){
+      const emailExists = await this.prismaService.user.findUnique({
+        where: { 
+          email: updateUserDto.email
+        },
+      });
+      if (emailExists) {
+        throw new HttpException("E-mail already registered", HttpStatus.BAD_REQUEST);
+      }
+
+      await this.prismaService.user.update({
+        data: {
+          email: updateUserDto.email,
+        },
+        where: { id },
+      });
+    };
+
+    if (updateUserDto.username){
+      await this.prismaService.user.update({
+        data: {
+          username: updateUserDto.username,
+        },
+        where: { id },
+      });
+    };
+    
+    if (updateUserDto.password){
+      const encryptedPassword = await bcrypt.hash(updateUserDto.password, 10);
+      await this.prismaService.user.update({
+        data: {
+          password: encryptedPassword,
+        },
+        where: { id },
+      });
+
+    }
+  };
 
   remove(id: number) {
     return `This action removes a #${id} user`;

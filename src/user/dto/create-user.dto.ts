@@ -1,4 +1,4 @@
-import { IsEmail, IsString, IsNotEmpty, IsOptional } from "@nestjs/class-validator";
+import { IsEmail, IsString, IsNotEmpty } from "@nestjs/class-validator";
 
 export class CreateUserDto {
     @IsNotEmpty({ message: "O campo nome é obrigatório" })
