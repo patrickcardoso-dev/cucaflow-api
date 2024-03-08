@@ -3,6 +3,7 @@ export class User {
         protected id: string, 
         protected username: string, 
         protected email: string, 
-        protected password: string
+        protected password: string,
+        protected avatar?: string
     ) {}
 }
