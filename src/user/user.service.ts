@@ -2,6 +2,8 @@ import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { PrismaService } from "../database/prisma.service";
+import { createClient } from '@supabase/supabase-js';
+import { Express } from 'express';
 import * as bcrypt from "bcrypt";
 
 @Injectable()
@@ -14,7 +16,7 @@ export class UserService {
         email: createUserDto.email,
       },
     });
-
+ 
     if (userEmailExists) {
       throw new HttpException("Email already in use", HttpStatus.BAD_REQUEST);
     };
@@ -45,11 +47,13 @@ export class UserService {
       throw new HttpException("User not found", HttpStatus.NOT_FOUND);
     };
 
+    const { BASE_IMG_URL: baseImageUrl, BUCKET: bucket } = process.env;
     const { password, ...userData } = user;
+    userData.avatar = `${baseImageUrl}${bucket}/${userData.avatar}`;
     return userData;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
+  async update(id: string, avatar: Express.Multer.File, updateUserDto: UpdateUserDto) {
     if (!id) {
       throw new HttpException("Missing id", HttpStatus.BAD_REQUEST);
     };
@@ -100,6 +104,25 @@ export class UserService {
         where: { id },
       });
     };
+
+    if(avatar){
+      const { SUPABASE_URL: supabaseUrl, SUPABASE_KEY: supabaseKey, BUCKET: bucket } = process.env;
+      const supabase = createClient(supabaseUrl, supabaseKey, {
+        auth: {
+          persistSession: false
+        }
+      });
+      const extension = avatar.mimetype.split('/')[1];
+      const { data } = await supabase.storage.from(bucket).upload(`${id}.jpg`, avatar?.buffer, {
+        upsert: true
+      });
+      await this.prismaService.user.update({
+        data: {
+          avatar: data.path,
+        },
+        where: { id },
+      });
+    }
   };
 
   async remove(id: string) {
