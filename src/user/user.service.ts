@@ -32,7 +32,7 @@ export class UserService {
     return userData;
   }
 
-  async findUserById(id: string) {
+  async findById(id: string) {
     if (!id) {
       throw new HttpException("Missing id", HttpStatus.BAD_REQUEST);
     };
@@ -47,6 +47,22 @@ export class UserService {
 
     const { password, ...userData } = user;
     return userData;
+  }
+
+  async findByEmail(email: string) {
+    if (!email) {
+      throw new HttpException("Missing email", HttpStatus.BAD_REQUEST);
+    };
+
+    const user = await this.prismaService.user.findUnique({
+      where: { email }
+    });
+
+    if (!user) {
+      throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+    };
+
+    return user;
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
