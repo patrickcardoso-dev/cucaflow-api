@@ -34,7 +34,7 @@ export class UserService {
     return userData;
   }
 
-  async findUserById(id: string) {
+  async findById(id: string) {
     if (!id) {
       throw new HttpException("Missing id", HttpStatus.BAD_REQUEST);
     };
@@ -48,9 +48,27 @@ export class UserService {
     };
 
     const { BASE_IMG_URL: baseImageUrl, BUCKET: bucket } = process.env;
+    
     const { password, ...userData } = user;
     userData.avatar = `${baseImageUrl}${bucket}/${userData.avatar}`;
+    
     return userData;
+  }
+
+  async findByEmail(email: string) {
+    if (!email) {
+      throw new HttpException("Missing email", HttpStatus.BAD_REQUEST);
+    };
+
+    const user = await this.prismaService.user.findUnique({
+      where: { email }
+    });
+
+    if (!user) {
+      throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+    };
+
+    return user;
   }
 
   async update(id: string, avatar: Express.Multer.File, updateUserDto: UpdateUserDto) {
@@ -105,24 +123,28 @@ export class UserService {
       });
     };
 
-    if(avatar){
+    if (avatar) {
       const { SUPABASE_URL: supabaseUrl, SUPABASE_KEY: supabaseKey, BUCKET: bucket } = process.env;
+      
       const supabase = createClient(supabaseUrl, supabaseKey, {
         auth: {
           persistSession: false
         }
       });
+      
       const extension = avatar.mimetype.split('/')[1];
+      
       const { data } = await supabase.storage.from(bucket).upload(`${id}.jpg`, avatar?.buffer, {
         upsert: true
       });
+      
       await this.prismaService.user.update({
         data: {
           avatar: data.path,
         },
         where: { id },
       });
-    }
+    };
   };
 
   async remove(id: string) {

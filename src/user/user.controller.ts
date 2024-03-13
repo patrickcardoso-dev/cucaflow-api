@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, UploadedFile, UseInterceptors, UseGuards } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { FileInterceptor } from '@nestjs/platform-express';
+import { JwtAuthGuard } from "src/auth/guards/jwt-guard";
 import { Express } from 'express';
 
 @Controller("user")
@@ -15,11 +16,13 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(":id")
-  findUserById(@Param("id") id: string) {
-    return this.userService.findUserById(id);
+  findById(@Param("id") id: string) {
+    return this.userService.findById(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(":id")
   @HttpCode(204)
   @UseInterceptors(FileInterceptor('avatar'))
@@ -27,6 +30,7 @@ export class UserController {
     return this.userService.update(id, avatar, updateUserDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(":id")
   @HttpCode(204)
   remove(@Param("id") id: string) {
