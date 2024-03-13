@@ -24,10 +24,9 @@ export class UserController {
     return this.userService.update(id, updateUserDto);
   }
 
-  @Delete(':id')
-  @HttpCode(200)
-  async deleteUser(@Param('id') id: string, @Body('password') password: string) {
-    await this.userService.remove(id, password);
-      return { message: 'User deleted successfully' };
-    }
+  @Delete(":id")
+  @HttpCode(204)
+  async deleteUser(@Param("id") id: string, @Body("password") password: string) {
+    return this.userService.remove(id, password);
+  }
 }
