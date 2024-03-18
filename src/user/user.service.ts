@@ -147,9 +147,13 @@ export class UserService {
     };
   };
 
-  async remove(id: string) {
+  async remove(id: string, password: string) {
     if (!id) {
       throw new HttpException("Missing id", HttpStatus.BAD_REQUEST);
+    };
+
+    if (!password) {
+      throw new HttpException("Missing password", HttpStatus.BAD_REQUEST);
     };
 
     const user = await this.prismaService.user.findUnique({
@@ -160,8 +164,13 @@ export class UserService {
       throw new HttpException("User not found", HttpStatus.NOT_FOUND);
     };
 
+    const passwordValid = await bcrypt.compare(password, user.password);
+    if (!passwordValid) {
+      throw new HttpException("Invalid password", HttpStatus.UNAUTHORIZED);
+    };
+
     return await this.prismaService.user.delete({
-      where: { id }
+      where: {id}
     });
-  };
-}
+  }
+} 

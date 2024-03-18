@@ -33,7 +33,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Delete(":id")
   @HttpCode(204)
-  remove(@Param("id") id: string) {
-    return this.userService.remove(id);
+  remove(@Param("id") id: string, @Body("password") password: string) {
+    return this.userService.remove(id, password);
   }
 }
