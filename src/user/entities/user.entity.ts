@@ -4,6 +4,7 @@ export class User {
         protected username: string, 
         protected email: string, 
         protected password: string,
-        protected avatar?: string
+        protected avatar?: string,
+        protected isLoginSocial?: boolean
     ) {}
 }
