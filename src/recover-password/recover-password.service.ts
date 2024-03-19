@@ -21,11 +21,12 @@ export class RecoverPasswordService {
         email: createRecoverPasswordDto.email,
       },
     });
-    if(!user){
+
+    if(!user) {
       throw new HttpException("Email not found", HttpStatus.NOT_FOUND);
     }
 
-    if(user.isLoginSocial){
+    if(user.isSocialLogin) {
       throw new HttpException("Unable to recover password using Google login", HttpStatus.FORBIDDEN);
     }
     
@@ -50,7 +51,7 @@ export class RecoverPasswordService {
       throw new UnauthorizedException();
     }
 
-    try{
+    try {
       const payload = await this.jwtService.verifyAsync(
         token,
         {
@@ -67,10 +68,9 @@ export class RecoverPasswordService {
       });
 
       return payload
-    }catch(error){
+    } catch(error) {
       throw new HttpException("Invalid token", HttpStatus.UNAUTHORIZED);
     }
     
   }
-
 }
