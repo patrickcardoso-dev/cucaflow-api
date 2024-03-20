@@ -17,5 +17,5 @@ export class CreateUserDto {
 
     @IsOptional()
     @IsBoolean()
-    isLoginSocial: boolean;
+    isSocialLogin: boolean;
 }
