@@ -25,7 +25,7 @@ export class RecoverPasswordService {
       throw new HttpException("Email not found", HttpStatus.NOT_FOUND);
     }
 
-    if(user.isLoginSocial){
+    if(user.isSocialLogin){
       throw new HttpException("Unable to recover password using Google login", HttpStatus.FORBIDDEN);
     }
     
@@ -36,7 +36,7 @@ export class RecoverPasswordService {
       .sendMail({
         to: user.email,
         subject: 'cucaflow password recovery',
-        template: '../mailer/templates/password-recovery',
+        template: 'password-recovery',
         context: {
           nome: user.username,
           link: process.env.APPLICATION_URL+`password-recovery?token=${verificationToken}`,
