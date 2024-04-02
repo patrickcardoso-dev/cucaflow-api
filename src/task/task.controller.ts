@@ -7,9 +7,10 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
-  @Post()
-  create(@Param('id_user') id_user: string, @Body() CreateTaskDto: CreateTaskDto) {
-    return this.taskService.create(id_user, CreateTaskDto);
+  @Post(':id_user')
+  create(@Param('id_user') id_user: string, @Body() createTaskDto: CreateTaskDto) {
+    console.log("Entrou no controller.");
+    return this.taskService.create(id_user, createTaskDto);
   }
 
   @Get(':id_user')
@@ -28,7 +29,7 @@ export class TaskController {
       await this.taskService.remove(id_user);
     } catch (error) {
       if (error instanceof NotFoundException) {
-        throw new NotFoundException(error.message);
+        throw new NotFoundException(error.message);        
       }
       throw error;
     }

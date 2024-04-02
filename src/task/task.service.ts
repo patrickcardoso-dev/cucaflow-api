@@ -3,14 +3,16 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { PrismaService } from '../database/prisma.service';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Task } from '.prisma/client';
+import { log } from 'console';
 
 @Injectable()
+
 export class TaskService {
   constructor(private readonly prismaService: PrismaService) {}
-
+  
   async create(id_user: string, createTaskDto: CreateTaskDto): Promise<Task> {
     const { title, description, date } = createTaskDto;
-
+  
     const user = await this.prismaService.user.findUnique({
       where: { id: id_user },
     });
