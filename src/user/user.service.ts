@@ -5,10 +5,17 @@ import { PrismaService } from "../database/prisma.service";
 import { createClient } from '@supabase/supabase-js';
 import { Express } from 'express';
 import * as bcrypt from "bcrypt";
+import { JwtService } from "@nestjs/jwt";
+import { MailerService } from '@nestjs-modules/mailer';
+import { CheckEmailService } from '../check-email/check-email.service';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+     private readonly prismaService: PrismaService ,
+     private readonly jwtService: JwtService,
+     private readonly mailerService: MailerService
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
     const userEmailExists = await this.prismaService.user.findUnique({
@@ -29,6 +36,20 @@ export class UserService {
         password: encryptedPassword
       }
     });
+
+    const payload = { email:  user.email };
+
+    const verificationToken = await this.jwtService.signAsync(payload);
+    await this.mailerService
+      .sendMail({
+        to: createUserDto.email,
+        subject: 'cucaflow password recovery',
+        template: 'password-recovery',
+        context: {
+          nome: createUserDto.username,
+          link: process.env.APPLICATION_URL+`check-email?token=${verificationToken}`,
+        },
+      });
 
     const { password, ...userData } = user;
     return userData;

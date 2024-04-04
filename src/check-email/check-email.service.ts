@@ -1,35 +1,30 @@
-import { Injectable, HttpException, UnauthorizedException, HttpStatus } from '@nestjs/common';
-import { CreateRecoverPasswordDto } from './dto/create-recover-password.dto';
-import { UpdateRecoverPasswordDto } from './dto/update-recover-password.dto';
+import { Injectable, HttpException, HttpStatus, UnauthorizedException } from '@nestjs/common';
+import { CreateCheckEmailDto } from './dto/create-check-email.dto';
+import { UpdateCheckEmailDto } from './dto/update-check-email.dto';
 import { PrismaService } from "../database/prisma.service";
-import { MailerService } from '@nestjs-modules/mailer';
 import { JwtService } from "@nestjs/jwt";
-import * as bcrypt from "bcrypt";
-import { User } from "@prisma/client";
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
-export class RecoverPasswordService {
+export class CheckEmailService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly jwtService: JwtService,
     private readonly mailerService: MailerService
     ) { };
 
-  async create(createRecoverPasswordDto: CreateRecoverPasswordDto) {
+  async create(createCheckEmailDto: CreateCheckEmailDto) {
+
     const user = await this.prismaService.user.findUnique({
       where: {
-        email: createRecoverPasswordDto.email,
+        email: createCheckEmailDto.email,
       },
     });
 
-    if(!user) {
-      throw new HttpException("Email not found", HttpStatus.NOT_FOUND);
-    }
-    
-    if(user.isSocialLogin){
-      throw new HttpException("Unable to recover password using Google login", HttpStatus.FORBIDDEN);
-    }
-    
+    if (!user) {
+      throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+    };
+
     const payload = { email:  user.email };
 
     const verificationToken = await this.jwtService.signAsync(payload);
@@ -40,13 +35,13 @@ export class RecoverPasswordService {
         template: 'password-recovery',
         context: {
           nome: user.username,
-          link: process.env.APPLICATION_URL+`new-password?token=${verificationToken}`,
+          link: process.env.APPLICATION_URL+`check-email?token=${verificationToken}`,
         },
       });
-      return
+    return;
   }
 
-  async update(token: string, updateRecoverPasswordDto: UpdateRecoverPasswordDto) {
+  async update(token: string, updateCheckEmailDto: UpdateCheckEmailDto) {
     if(!token){
       throw new UnauthorizedException();
     }
@@ -58,11 +53,10 @@ export class RecoverPasswordService {
           secret: process.env.JWT_SECRET
         }
         );
-      const encryptedPassword = await bcrypt.hash(updateRecoverPasswordDto.password, 10);
 
       await this.prismaService.user.update({
         data: {
-          password: encryptedPassword,
+          verifiedEmail: true,
         },
         where: { email: payload.email },
       });
@@ -71,6 +65,5 @@ export class RecoverPasswordService {
     } catch(error) {
       throw new HttpException("Invalid token", HttpStatus.UNAUTHORIZED);
     }
-    
   }
 }
