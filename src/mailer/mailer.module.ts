@@ -4,23 +4,29 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 
 @Module({
   imports: [
-    MailerModule.forRootAsync({
+    MailerModule.forRootAsync({ 
       useFactory: async () => ({
         transport: {
           host: process.env.MAIL_HOST,
-          port: process.env.MAIL_PORT, // Correct port for Mailtrap with STARTTLS
-          secure: false, // Mailtrap uses STARTTLS for encryption
+          port: process.env.MAIL_PORT,
+          secure: false,
           auth: { 
-            user: process.env.MAIL_USER, // Replace with your Mailtrap username
-            pass: process.env.MAIL_PASS, // Replace with your Mailtrap password (avoid storing in code)
-          },
+            user: process.env.MAIL_USER, 
+            pass: process.env.MAIL_PASS, 
+          }, 
         },
         defaults: {
-          from: `"CUCAFLOW" <${process.env.MAIL_REMETENT}>`, // Consider using a Mailtrap-generated email for consistency
+          from: `"CUCAFLOW" <${process.env.MAIL_REMETENT}>`,
         },
+        template: {
+          dir: __dirname + '/templates',
+          adapter: new HandlebarsAdapter(),
+          options: {
+          strict: true,
+          },
+        }
       }),
     }),
-  ],
+    ],
 })
 export class MailerModuleSend {} 
- 

@@ -37,7 +37,7 @@ export class RecoverPasswordService {
       .sendMail({
         to: user.email,
         subject: 'cucaflow password recovery',
-        template: '../mailer/templates/password-recovery',
+        template: 'password-recovery',
         context: {
           nome: user.username,
           link: process.env.APPLICATION_URL+`password-recovery?token=${verificationToken}`,
