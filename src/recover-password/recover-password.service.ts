@@ -26,9 +26,9 @@ export class RecoverPasswordService {
       throw new HttpException("Email not found", HttpStatus.NOT_FOUND);
     }
 
-    // if(user.isSocialLogin) {
-    //   throw new HttpException("Unable to recover password using Google login", HttpStatus.FORBIDDEN);
-    // }
+    if(user.isSocialLogin) {
+      throw new HttpException("Unable to recover password using Google login", HttpStatus.FORBIDDEN);
+    }
     
     const payload = { email:  user.email };
 
